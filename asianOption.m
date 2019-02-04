@@ -1,0 +1,22 @@
+function[callPrice,putPrice,callCI,putCI]=asianOption(n,S0,r,sigma,K,T,M,delta)
+callPayoffs = zeros(n,1);
+putPayoffs = zeros(n,1);
+deltaT=T/M;
+S=zeros(M+1,1);
+S(1)=S0;
+mu=r;
+Z=randn(M+1,1);
+for i = 2:M+1
+S(i) = S(i-1)*exp((mu-0.5*sigma^2)*deltaT+sigma*sqrt(deltaT)*Z(i));
+callPayoffs(i) = max(0,mean(S)-K);
+putPayoffs(i) = max(0,K-mean(S));
+end
+callPrice = exp(-r*T) * mean(callPayoffs)
+putPrice = exp(-r*T) * mean(putPayoffs)
+z_score = norminv(1-delta/2,0,1);
+callStDev = callPayoffs - callPrice;
+callStDev = 1/(n-1)* sum( callStDev.^2);
+callCI = [callPrice - z_score*callStDev/sqrt(n),callPrice + z_score*callStDev/sqrt(n)]
+putStDev = putPayoffs - putPrice;
+putStDev = 1/(n-1)* sum( putStDev.^2);
+putCI = [putPrice - z_score*putStDev/sqrt(n),putPrice + z_score*putStDev/sqrt(n)]
